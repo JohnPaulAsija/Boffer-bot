@@ -1,5 +1,5 @@
 
-# Bot Test — Rules Assistant ✅
+# Boffer Bot — Rules Assistant ✅
 
 Short Discord bot that answers rule-related questions about Dagorhir and Hearthlight using the Gemini API. It listens for messages that begin with `!rulescheck` and replies with concise answers (optionally referencing uploaded rule documents).
 
