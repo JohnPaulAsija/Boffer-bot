@@ -31,4 +31,4 @@ COPY --from=build --chown=appuser:appgroup /app .
 
 USER appuser
 
-ENTRYPOINT ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["python", "-m", "main.py"]
