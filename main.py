@@ -21,6 +21,34 @@ client = discord.Client(intents=intents)
 async def on_ready():
     print(f'{client.user} has connected to Discord!')
 
+    # Send a startup message to a channel in each guild (only once)
+    if getattr(client, "_startup_notified", False):
+        return
+
+    status_message = "Boffer Bot is now online!"
+
+    for guild in client.guilds:
+        try:
+            # Prefer the guild's system channel if the bot can send messages there
+            channel = guild.system_channel
+            if channel is None or not channel.permissions_for(guild.me).send_messages:
+                # Otherwise find the first text channel where the bot can send messages
+                channel = next(
+                    (c for c in guild.text_channels if c.permissions_for(guild.me).send_messages),
+                    None,
+                )
+
+            if channel is None:
+                print(f"No sendable channel found in guild {guild.name} ({guild.id})")
+                continue
+
+            await channel.send(status_message)
+            print(f"Sent startup message to {guild.name}#{channel.name}")
+        except Exception as e:
+            print(f"Error sending startup message to {guild.name} ({guild.id}): {e}")
+
+    client._startup_notified = True
+
 @client.event
 async def on_message(message):
     if message.content.lower().startswith('!rulescheck'):

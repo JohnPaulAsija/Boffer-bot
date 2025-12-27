@@ -39,14 +39,30 @@ HearthlightRules = None
 def _ensure_uploaded_rules():
     """Upload rules files to the client if they haven't been uploaded yet."""
     global DagorhirRules, HearthlightRules
-    if DagorhirRules is None:
-        DagorhirRules = client.files.upload(file=os.path.join(current_directory, 'rules', 'DagorhirManualofArms.pdf'))
-    if HearthlightRules is None:
-        HearthlightRules = client.files.upload(file=os.path.join(current_directory, 'rules', 'HearthlightRulebook.pdf'))
+    try:
+        if DagorhirRules is None:
+            uploaded = client.files.upload(file=os.path.join(current_directory, 'rules', 'DagorhirManualofArms.pdf'))
+            DagorhirRules = uploaded
+            # Some SDK versions expose the uploaded file's id as `id` or `file_id`, or may only provide a name.
+            file_id = getattr(uploaded, 'id', None) or getattr(uploaded, 'file_id', None) or getattr(uploaded, 'name', None) or repr(uploaded)
+            print(f"Uploaded DagorhirRules file: {file_id}")
+        if HearthlightRules is None:
+            uploaded = client.files.upload(file=os.path.join(current_directory, 'rules', 'HearthlightRulebook.pdf'))
+            HearthlightRules = uploaded
+            file_id = getattr(uploaded, 'id', None) or getattr(uploaded, 'file_id', None) or getattr(uploaded, 'name', None) or repr(uploaded)
+            print(f"Uploaded HearthlightRules file: {file_id}")
+    except Exception as e:
+        # Surface upload errors so they are visible in logs and so callers can handle them.
+        print(f"Error uploading rule files: {e}")
+        raise
 
 def generate_response(prompt):
 
-    _ensure_uploaded_rules()
+    try:
+        _ensure_uploaded_rules()
+    except Exception as e:
+        print(f"Failed to ensure uploaded rules: {e}")
+        return f"Error preparing rules files: {e}"
 
     try:
         response = client.models.generate_content(
@@ -55,4 +71,5 @@ def generate_response(prompt):
         print(response.text)
         return response.text
     except Exception as e:
+        print(f"Error generating response from model: {e}")
         return f"Error generating response: {e}"
