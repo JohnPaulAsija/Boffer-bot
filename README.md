@@ -52,6 +52,54 @@ Place rulebook files in the `rules/` folder. Current recognized files include:
 
 The bot can upload these to Gemini's File Search (or use them as context) to provide grounded answers.
 
+## 🐳 Docker deployment
+
+You can build and run the bot in Docker. The repository includes a `dockerfile` at the project root — specify it explicitly if needed.
+
+Create a `.env` in the project root containing at least the required variables:
+
+```env
+DISCORD_TOKEN=your_discord_bot_token
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+Build the Docker image:
+
+```bash
+docker build -t boffer-bot -f dockerfile .
+```
+
+Run the container (mount the `rules/` folder so the bot can access local rule files):
+
+Linux / macOS / WSL:
+
+```bash
+docker run --env-file .env -v "$(pwd)/rules:/app/rules" --name boffer-bot --rm -it boffer-bot
+```
+
+Windows PowerShell:
+
+```powershell
+docker run --env-file .env -v ${PWD}/rules:/app/rules --name boffer-bot --rm -it boffer-bot
+```
+
+Run detached (background):
+
+```bash
+docker run --env-file .env -v "$(pwd)/rules:/app/rules" --name boffer-bot -d boffer-bot
+```
+
+If you change code, rebuild the image:
+
+```bash
+docker build -t boffer-bot -f dockerfile .
+```
+
+**Notes:**
+
+- The container does not expose network ports; it connects to Discord via the bot token.
+- Ensure `.env` contains `DISCORD_TOKEN` and `GEMINI_API_KEY` so the bot can authenticate.
+
 ## ⚠️ Notes & Troubleshooting
 
 - Discord requires the `message_content` intent to read message content. Enable it in the Developer Portal and set `intents.message_content = True` in `main.py` (already present). Privileged intents must be enabled for your bot in the portal.
