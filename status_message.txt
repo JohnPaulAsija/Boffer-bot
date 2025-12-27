@@ -1,0 +1,1 @@
+I am a an AI powered bot that can answer questions about Dagorhir and Hearthlight rules. you can ask me questions by starting your message with "!RulesCheck" my code is opensource and can be seen here: https://github.com/JohnPaulAsija/Boffer-bot

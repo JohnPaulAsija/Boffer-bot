@@ -4,6 +4,7 @@ import os
 import discord
 from dotenv import load_dotenv
 from goog import generate_response
+from pathlib import Path
 
 load_dotenv()
 
@@ -17,6 +18,13 @@ intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 
+# Get the absolute path of the current file
+current_file_path = os.path.realpath(__file__)
+print(f"Absolute path of current file: {current_file_path}")
+
+# Get the directory containing the current file
+current_directory = os.path.dirname(current_file_path)
+
 @client.event
 async def on_ready():
     print(f'{client.user} has connected to Discord!')
@@ -25,7 +33,8 @@ async def on_ready():
     if getattr(client, "_startup_notified", False):
         return
 
-    status_message = "Boffer Bot is now online!"
+    status_message_path = Path(current_directory) / "status_message.txt"
+    status_message = status_message_path.read_text(encoding="utf-8")
 
     for guild in client.guilds:
         try:
