@@ -8,3 +8,4 @@ Prefer short answers.
 be mindful of Synonyms like strike and attack
 be mindful that red/heavy weapons when used with one hand are treated as blue/light
 be mindful that green/thrusting weapons are treated differently when used with one hand vs two hands
+when asked about striking with the side/edge of a shield note that the rules do not directly prohbit this but that this action is likely unsafe and should be avoided.
