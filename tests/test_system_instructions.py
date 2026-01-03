@@ -1,6 +1,5 @@
 import importlib
 import sys
-import shutil
 from pathlib import Path
 
 import pytest
@@ -16,20 +15,16 @@ def test_import_fails_when_system_instructions_missing(tmp_path, monkeypatch):
     assert si.exists(), "test requires an existing system_instructions.txt in the repo root"
 
     backup = tmp_path / "system_instructions.txt.bak"
-    shutil.move(str(si), str(backup))
+    si.replace(backup)
 
     try:
-        # Ensure the module is not cached from previous imports and that the project root
-        # is on sys.path so `importlib.import_module("goog")` finds the top-level module.
         sys.modules.pop("goog", None)
         sys.path.insert(0, str(repo_root))
+        module = importlib.import_module("goog")
         with pytest.raises(FileNotFoundError):
-            importlib.import_module("goog")
+            module.init_ai_client()
     finally:
         # restore file and clean up module cache and sys.path
-        shutil.move(str(backup), str(si))
+        backup.replace(si)
         sys.modules.pop("goog", None)
-        try:
-            sys.path.remove(str(repo_root))
-        except ValueError:
-            pass
+        sys.path.remove(str(repo_root))
