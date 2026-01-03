@@ -8,37 +8,45 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Global cache for File Search store
-_file_search_store_name = None
+def init_ai_client():
+    # Retrieve the Gemini API key from environment variables
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise EnvironmentError("GEMINI_API_KEY not found in .env file; set it in .env or the environment variables")
+    print(f"Using GEMINI_API_KEY: {api_key}")
+    
+    # Global cache for File Search store
+    _file_search_store_name = None
 
-api_key_ = os.getenv("GEMINI_API_KEY")
-if not api_key_:
-    raise EnvironmentError("GEMINI_API_KEY not found in .env file; set it in .env or the environment variables")
-print(f"Using GEMINI_API_KEY: {api_key_}")
+    # Initialize the GenAI client
+    client = genai.Client(api_key=api_key)
 
-client = genai.Client(api_key=api_key_)
+    # Get the absolute path of the current file
+    current_file_path = os.path.realpath(__file__)
 
-# Get the absolute path of the current file
-current_file_path = os.path.realpath(__file__)
-print(f"Absolute path of current file: {current_file_path}")
+    # Get the directory containing the current file
+    current_directory = os.path.dirname(current_file_path)
 
-# Get the directory containing the current file
-current_directory = os.path.dirname(current_file_path)
+    # Load/validate the system instructions from system_instructions.txt
+    _system_instruction_path = Path(current_directory) / "system_instructions.txt"
+    if not _system_instruction_path.exists():
+        raise FileNotFoundError(f"{_system_instruction_path} not found. Please create `system_instructions.txt` in the project root with the system instructions.")
 
-# Load/validate the system instructions at import time so startup errors are raised early
-_system_instruction_path = Path(current_directory) / "system_instructions.txt"
-if not _system_instruction_path.exists():
-    raise FileNotFoundError(f"{_system_instruction_path} not found. Please create `system_instructions.txt` in the project root with the system instructions.")
+    SYSTEM_INSTRUCTION = _system_instruction_path.read_text(encoding="utf-8")
 
-SYSTEM_INSTRUCTION = _system_instruction_path.read_text(encoding="utf-8")
+    try:
+       rules_file_refs = _ensure_uploaded_rules(current_directory=current_directory,client=client)
+    except Exception as e:
+        print(f"Failed to ensure uploaded rules: {e}")
+        return f"Error preparing rules files: {e}"
+    
+    # Return the initialized client, system instructions, and uploaded file references
+    return client, SYSTEM_INSTRUCTION, rules_file_refs
 
-# Lazy-loaded uploaded files (avoid network calls at import time)
-DagorhirRules = None
-HearthlightRules = None
-
-def _ensure_uploaded_rules():
-    """Upload rules files to the client if they haven't been uploaded yet."""
-    global DagorhirRules, HearthlightRules
+def _ensure_uploaded_rules(current_directory,client):
+    # Upload rule files if not already uploaded, and return their references
+    DagorhirRules = None
+    HearthlightRules = None
     try:
         if DagorhirRules is None:
             uploaded = client.files.upload(file=os.path.join(current_directory, 'rules', 'DagorhirManualofArms.pdf'))
@@ -55,19 +63,23 @@ def _ensure_uploaded_rules():
         # Surface upload errors so they are visible in logs and so callers can handle them.
         print(f"Error uploading rule files: {e}")
         raise
+    return [DagorhirRules, HearthlightRules]
 
-def generate_response(prompt):
 
+
+def generate_response(prompt, client, system_instructions, rules_file_refs):
     try:
-        _ensure_uploaded_rules()
-    except Exception as e:
-        print(f"Failed to ensure uploaded rules: {e}")
-        return f"Error preparing rules files: {e}"
+        # Build a safe contents list: prompt plus any available uploaded file refs
+        contents = [prompt]
+        if rules_file_refs:
+            contents.extend([r for r in rules_file_refs if r is not None]) # Add only non-None refs
 
-    try:
+        # Generate response from the model
         response = client.models.generate_content(
-            model='gemini-2.5-flash', contents=[prompt, DagorhirRules, HearthlightRules],
-            config=types.GenerateContentConfig(system_instruction=SYSTEM_INSTRUCTION))
+            model='gemini-2.5-flash',
+            contents=contents,
+            config=types.GenerateContentConfig(system_instruction=system_instructions),
+        )
         print(response.text)
         return response.text
     except Exception as e:
