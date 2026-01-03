@@ -56,13 +56,6 @@ The bot can upload these to Gemini's File Search (or use them as context) to pro
 
 You can build and run the bot in Docker. The repository includes a `dockerfile` at the project root — specify it explicitly if needed.
 
-Create a `.env` in the project root containing at least the required variables:
-
-```env
-DISCORD_TOKEN=your_discord_bot_token
-GEMINI_API_KEY=your_gemini_api_key
-```
-
 Build the Docker image:
 
 ```bash
