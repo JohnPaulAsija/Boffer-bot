@@ -67,7 +67,7 @@ async def on_ready():
 # Event: on_message (bot receives a message / a user interacts with the bot)
 @client.event
 async def on_message(message):
-    if message.content.lower().startswith('!rulescheck'):
+    if message.content.lower().startswith('!rulescheck'): #lowercase to make it case insensitive
         prompt = message.content[11:].strip()
         print(f"{message.author}: {message.content}")
         print(f"Prompt: {prompt}")
