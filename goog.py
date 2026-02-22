@@ -49,13 +49,13 @@ def _ensure_uploaded_rules(current_directory,client):
     HearthlightRules = None
     try:
         if DagorhirRules is None:
-            uploaded = client.files.upload(file=os.path.join(current_directory, 'rules', 'DagorhirManualofArms.pdf'))
+            uploaded = client.files.upload(file=os.path.join(current_directory, 'rules', 'Dagorhir Manual of Arms-2022-22-02.pdf'))
             DagorhirRules = uploaded
             # Some SDK versions expose the uploaded file's id as `id` or `file_id`, or may only provide a name.
             file_id = getattr(uploaded, 'id', None) or getattr(uploaded, 'file_id', None) or getattr(uploaded, 'name', None) or repr(uploaded)
             print(f"Uploaded DagorhirRules file: {file_id}")
         if HearthlightRules is None:
-            uploaded = client.files.upload(file=os.path.join(current_directory, 'rules', 'HearthlightRulebook.pdf'))
+            uploaded = client.files.upload(file=os.path.join(current_directory, 'rules', 'Treatise of War-2022-10-17.pdf'))
             HearthlightRules = uploaded
             file_id = getattr(uploaded, 'id', None) or getattr(uploaded, 'file_id', None) or getattr(uploaded, 'name', None) or repr(uploaded)
             print(f"Uploaded HearthlightRules file: {file_id}")

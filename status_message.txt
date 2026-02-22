@@ -7,3 +7,5 @@ Type `!about` to see this message.
 My code is open source: https://github.com/JohnPaulAsija/Boffer-bot
 
 Note: I generate automated responses—please verify with official rules or a moderator if unsure.
+my Hearthlight rules are accurate as of 2022-20-17 which was the date of the rules on the website on 2026-22-02
+my Dagorhir rules were taken from https://dagorhir.com/wordpress/rules/ on 2022-20-17 the website claiemd the rule book was accurate as of 2023
