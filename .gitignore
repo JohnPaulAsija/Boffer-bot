@@ -125,3 +125,4 @@ dmypy.json
 
 #uv
 uv.lock
+/.claude
