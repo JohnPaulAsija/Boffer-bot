@@ -1,8 +1,8 @@
 Hi — I'm an AI-powered bot that answers questions about Dagorhir and Hearthlight rules.
 
-To use me, start your message with !rulescheck' followed by your question (for example: `!rulescheck Is a shield considered armor?`).
+To use me, start your message with `!rulescheck` followed by your question (for example: `!rulescheck Is a shield considered armor?`).
 
-Type '!about' to see this message.
+Type `!about` to see this message.
 
 My code is open source: https://github.com/JohnPaulAsija/Boffer-bot
 
