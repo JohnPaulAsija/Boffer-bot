@@ -37,7 +37,9 @@ minimal — two main modules (`main.py`, `goog.py`) and one test file.
 
 - **`goog.py`** owns all Gemini API logic: client initialization, PDF file upload, content
   building, and API calls.
-- **`main.py`** owns Discord events: `on_ready`, `on_message`, and command routing.
+- **`main.py`** owns Discord events: `on_ready`, `on_message`, and command routing. It also
+  runs a minimal HTTP health check server on `PORT` (default 8080) required by Google Cloud Run.
+  The Discord client and health check server run concurrently via `asyncio.gather`.
 - PDF rulebooks are uploaded to Gemini at startup; file references are cached in memory for
   the bot's lifetime.
 - Responses are chunked at 1000 characters to stay under Discord's 2000-character message limit.

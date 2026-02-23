@@ -1,4 +1,5 @@
 # bot.py
+import asyncio
 import os
 
 import discord
@@ -82,4 +83,16 @@ async def on_message(message):
     if message.content.lower().startswith('!about'):
         await message.channel.send(status_message)
 
-client.run(TOKEN)
+async def _health_check(reader, writer):
+    await reader.read(1024)
+    writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK")
+    await writer.drain()
+    writer.close()
+
+async def main():
+    port = int(os.getenv("PORT", 8080))
+    server = await asyncio.start_server(_health_check, "0.0.0.0", port)
+    async with server:
+        await asyncio.gather(server.serve_forever(), client.start(TOKEN))
+
+asyncio.run(main())

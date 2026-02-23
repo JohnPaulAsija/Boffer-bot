@@ -31,4 +31,4 @@ COPY --from=build --chown=appuser:appgroup /app .
 
 USER appuser
 
-ENTRYPOINT ["python", "-m", "main.py"]
+ENTRYPOINT ["python", "main.py"]
