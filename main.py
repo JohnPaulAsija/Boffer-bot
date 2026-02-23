@@ -9,8 +9,11 @@ from pathlib import Path
 from goog import init_ai_client
 
 load_dotenv()
-# Initialize AI client and system instructions
-ai_client, SYSTEM_INSTRUCTION, rules_file_refs = init_ai_client()
+
+# Populated in main() after the health check server is already listening
+ai_client = None
+SYSTEM_INSTRUCTION = None
+rules_file_refs = None
 
 # Retrieve the Discord API token from environment variables
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -72,9 +75,9 @@ async def on_message(message):
         prompt = message.content[11:].strip()
         print(f"{message.author}: {message.content}")
         print(f"Prompt: {prompt}")
-        
+
         response = generate_response(prompt, client=ai_client, system_instructions=SYSTEM_INSTRUCTION, rules_file_refs=rules_file_refs)
-        
+
         # Split response into chunks of 1000 characters to fit Discord's limit
         for i in range(0, len(response), 1000):
             chunk = response[i:i+1000]
@@ -90,8 +93,19 @@ async def _health_check(reader, writer):
     writer.close()
 
 async def main():
+    global ai_client, SYSTEM_INSTRUCTION, rules_file_refs
+
+    # Start the health check server immediately so Cloud Run sees port 8080
+    # listening before the slow Gemini PDF upload begins
     port = int(os.getenv("PORT", 8080))
     server = await asyncio.start_server(_health_check, "0.0.0.0", port)
+    print(f"Health check server listening on port {port}")
+
+    # Run blocking Gemini initialisation (PDF uploads) in a thread executor
+    # so the health check server stays responsive during Cloud Run startup
+    loop = asyncio.get_running_loop()
+    ai_client, SYSTEM_INSTRUCTION, rules_file_refs = await loop.run_in_executor(None, init_ai_client)
+
     async with server:
         await asyncio.gather(server.serve_forever(), client.start(TOKEN))
 
