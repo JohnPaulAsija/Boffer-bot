@@ -22,5 +22,8 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
+**/.env
+**/.env.*
+**/.claude*
 LICENSE
 README.md
