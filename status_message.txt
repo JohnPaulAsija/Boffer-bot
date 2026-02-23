@@ -1,3 +1,5 @@
+--auto deployment test-
+
 Hi — I'm an AI-powered bot that answers questions about Dagorhir and Hearthlight rules.
 
 To use me, start your message with `!rulescheck` followed by your question (for example: `!rulescheck Is a shield considered armor?`).
