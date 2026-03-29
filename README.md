@@ -91,6 +91,7 @@ docker build -t boffer-bot -f dockerfile .
 **Notes:**
 
 - The container listens on port 8080 (or the `PORT` environment variable) for HTTP health checks. This is required for Google Cloud Run compatibility.
+- A `GET /version` endpoint is available on the same port, returning the current package version as JSON: `{"version": "0.1.0"}`.
 - Ensure `.env` contains `DISCORD_TOKEN` and `GEMINI_API_KEY` so the bot can authenticate.
 
 ## ⚠️ Notes & Troubleshooting

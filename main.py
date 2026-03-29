@@ -1,5 +1,7 @@
 # bot.py
 import asyncio
+import importlib.metadata
+import json
 import os
 
 import discord
@@ -87,8 +89,14 @@ async def on_message(message):
         await message.channel.send(status_message)
 
 async def _health_check(reader, writer):
-    await reader.read(1024)
-    writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK")
+    request = (await reader.read(1024)).decode(errors="ignore")
+    first_line = request.splitlines()[0] if request else ""
+    if first_line.startswith("GET /version"):
+        version = importlib.metadata.version("bot-test")
+        body = json.dumps({"version": version}).encode()
+        writer.write(b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: " + str(len(body)).encode() + b"\r\n\r\n" + body)
+    else:
+        writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK")
     await writer.drain()
     writer.close()
 
