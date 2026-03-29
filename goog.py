@@ -68,20 +68,34 @@ def _ensure_uploaded_rules(current_directory,client):
 
 
 def generate_response(prompt, client, system_instructions, rules_file_refs):
-    try:
-        # Build a safe contents list: prompt plus any available uploaded file refs
+    def _call(refs):
         contents = [prompt]
-        if rules_file_refs:
-            contents.extend([r for r in rules_file_refs if r is not None]) # Add only non-None refs
-
-        # Generate response from the model
-        response = client.models.generate_content(
+        if refs:
+            contents.extend([r for r in refs if r is not None])
+        return client.models.generate_content(
             model='gemini-2.5-flash',
             contents=contents,
             config=types.GenerateContentConfig(system_instruction=system_instructions),
         )
+
+    try:
+        response = _call(rules_file_refs)
         print(response.text)
         return response.text
     except Exception as e:
+        error_str = str(e)
+        if "403" in error_str or "PERMISSION_DENIED" in error_str:
+            # Uploaded file refs have expired (Gemini files expire after 48 h) — re-upload and retry
+            try:
+                print("File refs expired, re-uploading rules...")
+                current_directory = os.path.dirname(os.path.realpath(__file__))
+                new_refs = _ensure_uploaded_rules(current_directory, client)
+                rules_file_refs[:] = new_refs  # update list in-place so caller's reference stays fresh
+                response = _call(new_refs)
+                print(response.text)
+                return response.text
+            except Exception as retry_e:
+                print(f"Error generating response after re-upload: {retry_e}")
+                return f"Error generating response: {retry_e}"
         print(f"Error generating response from model: {e}")
         return f"Error generating response: {e}"
